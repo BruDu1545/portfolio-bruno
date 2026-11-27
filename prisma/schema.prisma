@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Colunas base = português; colunas "En" = inglês (opcionais, caem no PT se vazias).
+model Profile {
+  id          Int     @id // sempre 1: só existe um perfil
+  name        String
+  role        String
+  roleEn      String?
+  summary     String
+  summaryEn   String?
+  openToWork  Boolean @default(true)
+  email       String
+  githubUrl   String
+  linkedinUrl String
+  photoPath   String?
+  // Obsoleto: não é mais lido (o currículo é gerado). Mantido para o db push não apagar dados.
+  cvPath      String?
+  // Só no currículo em PDF (o telefone nunca aparece no site).
+  fullName    String?
+  location    String?
+  locationEn  String?
+  phone       String?
+  cvClosing   String?
+  cvClosingEn String?
+}
+
+model Project {
+  id            Int     @id
+  title         String
+  titleEn       String?
+  description   String
+  descriptionEn String?
+  stack         String // JSON: SQLite não tem arrays
+  stackEn       String? // JSON
+  url           String?
+  imagePath     String?
+  metric        String?
+  metricEn      String?
+  order         Int
+  visible       Boolean @default(true)
+}
+
+model Experience {
+  id         Int     @id
+  role       String
+  roleEn     String?
+  company    String
+  location   String
+  locationEn String?
+  period     String
+  periodEn   String?
+  bullets    String // JSON
+  bulletsEn  String? // JSON
+  current    Boolean @default(false)
+  order      Int
+  visible    Boolean @default(true)
+}
+
+model Skill {
+  id       Int     @id
+  name     String
+  nameEn   String?
+  group    String
+  groupEn  String?
+  // Obsoleto: não é mais lido (substituído por level). Mantido para o db push não apagar dados.
+  learning Boolean @default(false)
+  level    String? // "learning" | "intermediate" | null
+  order    Int
+  visible  Boolean @default(true)
+}
+
+model Education {
+  id       Int     @id
+  course   String
+  courseEn String?
+  school   String
+  period   String
+  periodEn String?
+  note     String?
+  noteEn   String?
+  order    Int
+  visible  Boolean @default(true)
+}
+
+// Só no currículo em PDF; proficiency (1 a 5) é a barra de nível.
+model Language {
+  id          Int     @id
+  name        String
+  nameEn      String?
+  level       String
+  levelEn     String?
+  proficiency Int
+  order       Int
+  visible     Boolean @default(true)
+}
+
+// Falhas de login por IP, para o limite de tentativas (5 em 15 min). Linhas antigas não atrapalham a conta.
+model LoginAttempt {
+  id        Int      @id @default(autoincrement())
+  ip        String
+  createdAt DateTime @default(now())
+
+  @@index([ip, createdAt])
+}
